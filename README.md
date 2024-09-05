@@ -1,6 +1,6 @@
 # better-limit-reader-rs
 
-[![crates.io](https://img.shields.io/crates/v/better-limit-reader?color=orange&label=crates.io)](https://crates.io/crates/better-limit-reader)
+![Crates.io Version](https://img.shields.io/crates/v/better-limit-reader)
 [![Released API docs](https://img.shields.io/docsrs/better-limit-reader)](https://docs.rs/better-limit-reader/)
 
 Exposes LimitReader which is a limit reader, that protects against zip-bombs and other nefarious activities that limits the number of bytes read from an underlying reader.
