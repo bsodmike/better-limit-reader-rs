@@ -3,7 +3,7 @@
 [![crates.io](https://img.shields.io/crates/v/better-limit-reader?color=orange&label=crates.io)](https://crates.io/crates/better-limit-reader)
 [![Released API docs](https://img.shields.io/docsrs/better-limit-reader)](https://docs.rs/better-limit-reader/)
 
-Exposes LimitReader which is a limit reader, that protects against zip-bombs and other nefarious activities.
+Exposes LimitReader which is a limit reader, that protects against zip-bombs and other nefarious activities that limits the number of bytes read from an underlying reader.
 
 This crate is heavily inspired by Jon Gjengset’s “Crust of Rust” episode on the [inner workings of git on YouTube](https://youtu.be/u0VotuGzD_w?si=oIuV9CITSWHJXKBu&t=3503) and mitigrating Zip-bombs.
 
