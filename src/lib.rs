@@ -51,6 +51,11 @@ impl LimitReader {
         }
     }
 
+    /// Return a reference to the internal buffer.
+    pub fn buffer(&self) -> &[u8; Self::DEFAULT_BUF_SIZE] {
+        &self.buf
+    }
+
     /// Increase the allowed limit on the `LimitReader`
     pub fn limit(&mut self, limit: usize) -> &mut Self {
         self.expected_size = limit;

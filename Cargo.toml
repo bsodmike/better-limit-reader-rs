@@ -1,6 +1,6 @@
 [package]
 name = "better-limit-reader"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Michael de Silva <michael@cyberdynea.io"]
 description = "Rust SDK for 1Password Connect"
 readme = "README.md"
@@ -10,6 +10,10 @@ license = "MIT"
 keywords = ["limit-reader"]
 autobins = false
 edition = "2021"
+
+[[bin]]
+name = "reader-example"
+path = "src/bin/reader-example.rs"
 
 [dependencies]
 anyhow = "1.0.86"
