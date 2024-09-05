@@ -8,6 +8,7 @@ homepage = "https://github.com/bsodmike/better-limit-reader-rs"
 repository = "https://github.com/bsodmike/better-limit-reader-rs"
 license = "MIT"
 keywords = ["limit-reader"]
+autobins = false
 edition = "2021"
 
 [dependencies]
