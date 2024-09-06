@@ -1,9 +1,9 @@
-//! Exposes [LimitReader] which is a limit reader, that protects against zip-bombs and other nefarious activities.
+//! Exposes [`LimitReader`] which is a limit reader, that protects against zip-bombs and other nefarious activities.
 //!
 //! This crate is heavily inspired by Jon Gjengset's "Crust of Rust" episode on the inner workings of git on YouTube (<https://youtu.be/u0VotuGzD_w?si=oIuV9CITSWHJXKBu&t=3503>) and mitigrating Zip-bombs.
 #![warn(missing_docs)]
 
-use anyhow::{Context, Result};
+use error::LimitReaderError;
 use flate2::read::ZlibDecoder;
 use readable::MyBufReader;
 use readable::Readable;
@@ -12,13 +12,17 @@ use std::io;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::path::PathBuf;
+use LimitReaderResult as Result;
 
+pub(crate) mod error;
 pub(crate) mod readable;
+
+/// Default result type for [`LimitReader`]
+pub type LimitReaderResult<T> = std::result::Result<T, LimitReaderError>;
 
 /// Re-exports
 pub mod prelude {
-    pub use crate::LimitReader;
-    pub use anyhow::{Context, Result};
+    pub use crate::{error::LimitReaderError, LimitReader, LimitReaderResult};
 }
 
 #[allow(dead_code)]
@@ -41,7 +45,7 @@ impl LimitReader {
     /// Default buffer size for the internal `LimitReader`
     pub const DEFAULT_BUF_SIZE: usize = 1024;
 
-    /// Create a new instance of [LimitReader] with a [LimitReader::DEFAULT_BUF_SIZE] for the limit-readers max threshold.
+    /// Create a new instance of [`LimitReader`] with a [`LimitReader::DEFAULT_BUF_SIZE`] for the limit-readers max threshold.
     pub fn new() -> Self {
         Self {
             buf: [0; Self::DEFAULT_BUF_SIZE],
@@ -82,7 +86,7 @@ impl LimitReader {
 
     /// Read from provided source file.  If the source data is already Zlib compressed, optionally decode the data stream before reading it through a limit-reader.
     pub fn read(&mut self, source: PathBuf) -> Result<usize> {
-        let f = std::fs::File::open(source).context("Unable to open provided path")?;
+        let f = std::fs::File::open(source).expect("Unable to open file");
         if self.decode_zlib {
             let z = ZlibDecoder::new(f);
             let buf_reader = MyBufReader(z);
@@ -99,7 +103,7 @@ impl LimitReader {
 
     /// Given an accessible source file, this will automatically limit the contents read to the size of the buffer itself.  This will silently truncate read bytes into the buffer, without raising an error.
     pub fn read_limited(&mut self, source: PathBuf) -> Result<usize> {
-        let f = std::fs::File::open(source).context("Unable to open provided path")?;
+        let f = std::fs::File::open(source)?;
         if self.decode_zlib {
             let z = ZlibDecoder::new(f);
             let buf_reader = MyBufReader(z);
@@ -118,10 +122,7 @@ impl LimitReader {
         let try_read = reader.perform_read(&mut self.buf);
         match try_read {
             Ok(value) => Ok(value),
-            Err(err) => {
-                let detail = err.to_string();
-                Err(err).context(format!("LimitReader failed to read the thing: {}", detail))
-            }
+            Err(err) => Err(LimitReaderError::new(error::ErrorKind::IoError, err)),
         }
     }
 }
@@ -199,10 +200,7 @@ mod tests {
                     assert!(read_size == limit);
                 }
                 Err(err) => {
-                    assert_eq!(
-                        "LimitReader failed to read the thing: too many bytes",
-                        err.to_string()
-                    );
+                    assert_eq!("Error: too many bytes", err.to_string());
                 }
             }
 
@@ -234,10 +232,7 @@ mod tests {
                         String::from_utf8(limit_reader.buf[..read_size].to_vec()).unwrap();
                     assert_eq!(persisted_text, format!("{}", &text).to_string());
                 }
-                Err(err) => assert_eq!(
-                    "LimitReader failed to read the thing: too many bytes",
-                    err.to_string()
-                ),
+                Err(err) => assert_eq!("Error: too many bytes", err.to_string()),
             };
 
             drop(file);
@@ -258,10 +253,7 @@ mod tests {
 
             match limit_reader.read(file_path) {
                 Ok(_) => unreachable!(),
-                Err(err) => assert_eq!(
-                    "LimitReader failed to read the thing: corrupt deflate stream",
-                    err.to_string()
-                ),
+                Err(err) => assert_eq!("Error: corrupt deflate stream", err.to_string()),
             };
 
             drop(file);
@@ -334,10 +326,7 @@ mod tests {
 
             match limit_reader.read(file_path) {
                 Ok(_) => unreachable!(),
-                Err(err) => assert_eq!(
-                    "LimitReader failed to read the thing: corrupt deflate stream",
-                    err.to_string()
-                ),
+                Err(err) => assert_eq!("Error: corrupt deflate stream", err.to_string()),
             };
 
             drop(file);

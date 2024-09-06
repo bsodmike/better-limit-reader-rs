@@ -1,6 +1,6 @@
 [package]
 name = "better-limit-reader"
-version = "0.1.5"
+version = "0.2.0"
 authors = ["Michael de Silva <michael@cyberdynea.io>"]
 description = "Configurable limit reader that limits the number of bytes read from an underlying reader, supporting decompression from Gzip and Zlib compressed via `flate2`"
 readme = "README.md"
@@ -12,7 +12,6 @@ autobins = false
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0.86"
 flate2 = "1.0.33"
 
 [dev-dependencies]
