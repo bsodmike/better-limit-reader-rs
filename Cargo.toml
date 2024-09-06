@@ -1,8 +1,8 @@
 [package]
 name = "better-limit-reader"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["Michael de Silva <michael@cyberdynea.io"]
-description = "Rust SDK for 1Password Connect"
+description = "Configurable limit reader that limits the number of bytes read from an underlying reader, supporting decompression from Gzip and Zlib compressed via `flate2`"
 readme = "README.md"
 homepage = "https://github.com/bsodmike/better-limit-reader-rs"
 repository = "https://github.com/bsodmike/better-limit-reader-rs"
