@@ -1,19 +1,15 @@
 [package]
 name = "better-limit-reader"
-version = "0.1.4"
-authors = ["Michael de Silva <michael@cyberdynea.io"]
+version = "0.1.5"
+authors = ["Michael de Silva <michael@cyberdynea.io>"]
 description = "Configurable limit reader that limits the number of bytes read from an underlying reader, supporting decompression from Gzip and Zlib compressed via `flate2`"
 readme = "README.md"
 homepage = "https://github.com/bsodmike/better-limit-reader-rs"
 repository = "https://github.com/bsodmike/better-limit-reader-rs"
-license = "MIT"
+license = "MIT OR Apache-2.0"
 keywords = ["limit-reader"]
 autobins = false
 edition = "2021"
-
-[[bin]]
-name = "reader-example"
-path = "src/bin/reader-example.rs"
 
 [dependencies]
 anyhow = "1.0.86"
