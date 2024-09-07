@@ -17,8 +17,10 @@ Refer to the [docs](https://docs.rs/TODO) for further examples.
 
 ### Building
 
+This runs a `release` build, runs tests and generates docs.
+
 ```shell script
-cargo build --release
+./build.sh
 ```
 
 # MSRV

@@ -1,17 +1,24 @@
+#![warn(missing_docs)]
+
+//! # better-limit-reader
+//!
 //! Exposes [`LimitReader`] which is a limit reader, that protects against zip-bombs and other nefarious activities.
 //!
 //! This crate is heavily inspired by Jon Gjengset's "Crust of Rust" episode on the inner workings of git on YouTube (<https://youtu.be/u0VotuGzD_w?si=oIuV9CITSWHJXKBu&t=3503>) and mitigrating Zip-bombs.
-#![warn(missing_docs)]
 
+use derive_builder::Builder;
 use error::LimitReaderError;
 use flate2::read::ZlibDecoder;
 use readable::MyBufReader;
 use readable::Readable;
 use readable::{falible::LimitReaderFallible, infalible::LimitReaderInfallible};
+use std::fmt::Display;
+use std::fmt::Formatter;
 use std::io;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::path::PathBuf;
+
 use LimitReaderResult as Result;
 
 pub(crate) mod error;
@@ -22,7 +29,8 @@ pub type LimitReaderResult<T> = std::result::Result<T, LimitReaderError>;
 
 /// Re-exports
 pub mod prelude {
-    pub use crate::{error::LimitReaderError, LimitReader, LimitReaderResult};
+    //! Traits and macros used by most projects. Add `use better_limit_reader::prelude::*;` to your code to quickly get started with LimitReader.
+    pub use crate::{error::LimitReaderError, LimitReader, LimitReaderOutput, LimitReaderResult};
 }
 
 #[allow(dead_code)]
@@ -102,20 +110,27 @@ impl LimitReader {
     }
 
     /// Given an accessible source file, this will automatically limit the contents read to the size of the buffer itself.  This will silently truncate read bytes into the buffer, without raising an error.
-    pub fn read_limited(&mut self, source: PathBuf) -> Result<usize> {
+    pub fn read_limited(&mut self, source: PathBuf) -> Result<LimitReaderOutput> {
+        let source_bytes = std::fs::metadata(&source)?.len();
         let f = std::fs::File::open(source)?;
-        if self.decode_zlib {
+
+        let bytes_read = if self.decode_zlib {
             let z = ZlibDecoder::new(f);
             let buf_reader = MyBufReader(z);
             let reader = LimitReaderInfallible::new(buf_reader, self.expected_size);
 
-            self.try_read(reader)
+            self.try_read(reader)?
         } else {
             let buf_reader = MyBufReader(BufReader::new(f));
             let reader = LimitReaderInfallible::new(buf_reader, self.expected_size);
 
-            self.try_read(reader)
-        }
+            self.try_read(reader)?
+        };
+
+        Ok(LimitReaderOutputBuilder::default()
+            .source_size(source_bytes)
+            .bytes_read(bytes_read as u64)
+            .build()?)
     }
 
     fn try_read(&mut self, mut reader: impl Readable) -> Result<usize> {
@@ -124,6 +139,42 @@ impl LimitReader {
             Ok(value) => Ok(value),
             Err(err) => Err(LimitReaderError::new(error::ErrorKind::IoError, err)),
         }
+    }
+}
+
+/// [`LimitReader`]'s output
+#[allow(missing_docs)]
+#[derive(Default, Builder)]
+#[builder(setter(into))]
+pub struct LimitReaderOutput {
+    source_size: u64,
+    bytes_read: u64,
+}
+
+impl LimitReaderOutput {
+    /// Return bytes read by the underlying reader.
+    pub fn bytes_read(&self) -> usize {
+        self.bytes_read as usize
+    }
+
+    /// Size in bytes of the underlying file accessible to the reader.
+    pub fn source_size(&self) -> usize {
+        self.source_size as usize
+    }
+
+    /// Unread bytes (from the underlying file accessible to the reader).
+    pub fn bytes_remaining(&self) -> usize {
+        (self.source_size - self.bytes_read) as usize
+    }
+}
+
+impl Display for LimitReaderOutput {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{{ source_size: {}, bytes_read:{} }}",
+            self.source_size, self.bytes_read
+        )
     }
 }
 
@@ -278,7 +329,10 @@ mod tests {
             limit_reader.limit(limit);
 
             match limit_reader.read_limited(file_path.clone()) {
-                Ok(read_size) => assert!(read_size == limit),
+                Ok(reader_output) => {
+                    let bytes_read = reader_output.bytes_read();
+                    assert!(bytes_read == limit)
+                }
                 Err(_) => unreachable!(),
             }
 
@@ -293,12 +347,13 @@ mod tests {
             limit_reader.limit(limit).enable_decode_zlib();
 
             match limit_reader.read_limited(file_path.clone()) {
-                Ok(read_size) => {
+                Ok(reader_output) => {
+                    let bytes_read = reader_output.bytes_read();
                     let persisted_text =
-                        String::from_utf8(limit_reader.buf[..read_size].to_vec()).unwrap();
+                        String::from_utf8(limit_reader.buf[..bytes_read].to_vec()).unwrap();
                     assert_eq!(
                         persisted_text,
-                        format!("{}", &text[..read_size]).to_string()
+                        format!("{}", &text[..bytes_read]).to_string()
                     );
                 }
                 Err(_) => unreachable!(),

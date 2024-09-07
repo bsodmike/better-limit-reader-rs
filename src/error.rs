@@ -1,4 +1,4 @@
-use crate::error_from;
+use crate::{error_from, LimitReaderOutputBuilderError};
 use std::{
     error::Error as StdError,
     fmt::{self},
@@ -22,6 +22,7 @@ pub struct Error {
 pub enum ErrorKind {
     IoError,
     Utf8Error,
+    LimitReaderOutputBuilderError,
 }
 
 impl ErrorKind {
@@ -31,6 +32,7 @@ impl ErrorKind {
         match *self {
             IoError => "io error",
             Utf8Error => "invalid utf-8",
+            LimitReaderOutputBuilderError => "builder error",
         }
     }
 }
@@ -72,6 +74,10 @@ impl fmt::Display for Error {
 
 error_from!(std::io::Error, ErrorKind::IoError);
 error_from!(FromUtf8Error, ErrorKind::Utf8Error);
+error_from!(
+    LimitReaderOutputBuilderError,
+    ErrorKind::LimitReaderOutputBuilderError
+);
 
 #[macro_use]
 pub mod macros {

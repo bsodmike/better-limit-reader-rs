@@ -117,6 +117,7 @@ pub(crate) mod infalible {
     {
         fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
             let max_read = self.limit.min(buf.len()); // min of limit and buf.len()
+
             let bytes_read = self.reader.read(&mut buf[..max_read])?;
             self.reader_count += 1;
 
