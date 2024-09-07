@@ -9,7 +9,7 @@ This crate is heavily inspired by Jon Gjengset’s “Crust of Rust” episode o
 
 ## API usage
 
-Refer to the [docs](https://docs.rs/TODO) for further examples.
+Refer to the [docs](https://docs.rs/better-limit-reader/latest/better_limit_reader/) for further examples.
 
 ### Upcoming enhancements
 
