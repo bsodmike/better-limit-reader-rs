@@ -13,6 +13,7 @@ Refer to the [docs](https://docs.rs/better-limit-reader/latest/better_limit_read
 
 ### Upcoming enhancements
 
+- [ ] Gzip decompression.
 - TBD: If you have any requests, please open an issue!
 
 ### Building
