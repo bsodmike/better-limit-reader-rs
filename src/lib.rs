@@ -152,7 +152,7 @@ impl LimitReader {
         let try_read = reader.perform_read(&mut self.buf);
         match try_read {
             Ok(value) => Ok(value),
-            Err(err) => Err(LimitReaderError::new(error::ErrorKind::IoError, err)),
+            Err(err) => Err(LimitReaderError::new(error::ErrorKind::ReadError, err)),
         }
     }
 }
