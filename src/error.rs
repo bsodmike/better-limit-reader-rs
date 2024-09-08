@@ -10,10 +10,6 @@ use std::{
 #[allow(clippy::module_name_repetitions)]
 pub type BoxError = Box<dyn StdError + Send + Sync>;
 
-/// Default error type for create.
-#[allow(clippy::module_name_repetitions)]
-pub type LimitReaderError = Error;
-
 /// Error type
 pub struct Error {
     kind: ErrorKind,
@@ -25,11 +21,11 @@ pub struct Error {
 #[allow(clippy::module_name_repetitions)]
 #[allow(clippy::enum_variant_names)]
 pub enum ErrorKind {
+    ReadError,
     IoError,
     LimitReaderOutputBuilderError,
     Utf8Error,
     TryFromIntError,
-    LimitReaderError(Box<dyn StdError + Send + Sync>),
 }
 
 impl ErrorKind {
@@ -38,11 +34,11 @@ impl ErrorKind {
         use ErrorKind::*;
         // tidy-alphabetical-start
         match *self {
+            ReadError => "read error",
             IoError => "io error",
             Utf8Error => "invalid utf-8",
             LimitReaderOutputBuilderError => "builder error",
             TryFromIntError => "conversion error",
-            LimitReaderError(_) => "boxed error",
         }
     }
 }
@@ -54,6 +50,13 @@ impl fmt::Display for ErrorKind {
     }
 }
 
+impl StdError for Error {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+        Some(&*self.error)
+    }
+}
+
+#[allow(dead_code)]
 impl Error {
     pub fn new<E>(kind: ErrorKind, error: E) -> Error
     where
@@ -107,3 +110,7 @@ pub mod macros {
         };
     }
 }
+
+/// Default error for [`crate::prelude::LimitReader`]
+#[allow(clippy::module_name_repetitions)]
+pub type LimitReaderError = Error;
