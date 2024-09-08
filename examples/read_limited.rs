@@ -15,7 +15,7 @@ fn main() -> LimitReaderResult<()> {
     );
 
     let data = limit_reader.buffer();
-    let text = String::from_utf8(data[..bytes_read].to_vec())?;
+    let text = String::from_utf8(data[..(bytes_read as usize)].to_vec())?;
 
     println!("First line from README: {}", &text);
 
