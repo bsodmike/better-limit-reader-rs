@@ -2,13 +2,16 @@ use crate::{error_from, LimitReaderOutputBuilderError};
 use std::{
     error::Error as StdError,
     fmt::{self},
+    num::TryFromIntError,
     string::FromUtf8Error,
 };
 
 /// Boxed error, a ptr to the Error via dynamic dispatch allocated on the heap at run time.
+#[allow(clippy::module_name_repetitions)]
 pub type BoxError = Box<dyn StdError + Send + Sync>;
 
 /// Default error type for create.
+#[allow(clippy::module_name_repetitions)]
 pub type LimitReaderError = Error;
 
 /// Error type
@@ -19,20 +22,27 @@ pub struct Error {
 
 #[derive(Debug)]
 #[non_exhaustive]
+#[allow(clippy::module_name_repetitions)]
+#[allow(clippy::enum_variant_names)]
 pub enum ErrorKind {
     IoError,
-    Utf8Error,
     LimitReaderOutputBuilderError,
+    Utf8Error,
+    TryFromIntError,
+    LimitReaderError(Box<dyn StdError + Send + Sync>),
 }
 
 impl ErrorKind {
     pub(crate) fn as_str(&self) -> &'static str {
+        #[allow(clippy::enum_glob_use)]
         use ErrorKind::*;
         // tidy-alphabetical-start
         match *self {
             IoError => "io error",
             Utf8Error => "invalid utf-8",
             LimitReaderOutputBuilderError => "builder error",
+            TryFromIntError => "conversion error",
+            LimitReaderError(_) => "boxed error",
         }
     }
 }
@@ -78,6 +88,7 @@ error_from!(
     LimitReaderOutputBuilderError,
     ErrorKind::LimitReaderOutputBuilderError
 );
+error_from!(TryFromIntError, ErrorKind::TryFromIntError);
 
 #[macro_use]
 pub mod macros {
