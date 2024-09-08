@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Unreleased
 
+# 2.0.0 (8 Sept 2024)
+
+- **added:** Github CI
+- **fixed:** Clippy offences
 - **changed:** Improve docs
+- **changed:** Stablised return values to `u64`. Use of `usize` will need to be re-evaluated for future `no-std` support.
+
+See [PR for changes](https://github.com/bsodmike/better-limit-reader-rs/pull/1/files)
+
 
 # 1.0.2 (7 Sept 2024)
 
