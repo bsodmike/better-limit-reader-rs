@@ -53,7 +53,7 @@ impl LimitReader {
     /// Default buffer size for the internal `LimitReader`
     pub const DEFAULT_BUF_SIZE: usize = 1024;
 
-    /// Create a new instance of [`LimitReader`] with a [`LimitReader::DEFAULT_BUF_SIZE`] for the limit-readers max threshold.
+    /// Create a new [`LimitReader`] with a [`LimitReader::DEFAULT_BUF_SIZE`] for the limit-readers max threshold.
     pub fn new() -> Self {
         Self {
             buf: [0; Self::DEFAULT_BUF_SIZE],
@@ -68,7 +68,7 @@ impl LimitReader {
         &self.buf
     }
 
-    /// Increase the allowed limit on the `LimitReader`
+    /// Increase the allowed limit on the [`LimitReader`]
     pub fn limit(&mut self, limit: usize) -> &mut Self {
         self.expected_size = limit;
 
